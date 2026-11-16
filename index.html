@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bard's Lexicon · 莎士比亞詞彙 A–Z</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4ecd8;--card:#fbf6e8;--ink:#2b2118;--mute:#7a6a58;--accent:#8a3b2e;--gold:#b9955a}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1813;--card:#272019;--ink:#efe4cc;--mute:#b3a58f;--accent:#e08a74;--gold:#a98650}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","Cormorant Garamond",Georgia,serif;line-height:1.8}
+header{text-align:center;padding:64px 20px 28px}
+header h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(2.4rem,7vw,4.4rem);margin:0;letter-spacing:.04em}
+header p{color:var(--mute);margin:.4em 0 0;letter-spacing:.2em;font-size:.95rem}
+nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-block:1px solid var(--gold);display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:6px}
+nav a{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:1.15rem;color:var(--accent);text-decoration:none;width:2rem;text-align:center;border-radius:4px}
+nav a:hover{background:var(--accent);color:var(--bg)}
+main{max-width:1040px;margin:0 auto;padding:30px 18px 80px}
+.entry{display:grid;grid-template-columns:5fr 6fr;gap:34px;align-items:center;margin:54px 0}
+.entry:nth-child(even) .pic{order:2}
+.pic{position:relative;border:10px solid var(--card);outline:1px solid var(--gold);box-shadow:0 10px 30px #0003}
+.pic img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover}
+.pic b{position:absolute;left:-14px;top:-26px;font:700 4.6rem/1 "Cormorant Garamond",serif;color:var(--accent);text-shadow:0 2px 0 var(--bg),0 0 12px var(--bg)}
+.word{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em}
+.word h2{font:700 clamp(2rem,5vw,3rem)/1.1 "Cormorant Garamond",serif;margin:0}
+.word i{color:var(--mute)}.zh{color:var(--accent);font-weight:600}
+button{cursor:pointer;border:1px solid var(--gold);background:var(--card);color:var(--accent);border-radius:999px;padding:.15em .8em;font:inherit;font-size:.85rem}
+button:hover,button.on{background:var(--accent);color:var(--bg)}
+blockquote{margin:1.1em 0 0;padding:.2em 0 .2em 1.1em;border-left:3px solid var(--gold)}
+blockquote p{font:italic 500 clamp(1.2rem,2.6vw,1.55rem)/1.55 "Cormorant Garamond",Georgia,serif;margin:0 0 .4em}
+blockquote small{display:block;color:var(--mute);margin-top:.4em}
+footer{text-align:center;color:var(--mute);padding:30px;border-top:1px solid var(--gold);font-size:.85rem}
+@media(max-width:720px){.entry{grid-template-columns:1fr;gap:22px}.entry:nth-child(even) .pic{order:0}}
+</style>
+</head>
+<body>
+<header><h1>Bard's Lexicon</h1><p>莎士比亞詞彙 A – Z ・ 二十六個字，二十六幅晨昏</p></header>
+<nav id="nav"></nav>
+<main id="list"></main>
+<footer>Words &amp; quotations from William Shakespeare (public domain). Paintings generated procedurally in an impressionist style.</footer>
+<script src="data.js"></script>
+<script>
+const list=document.getElementById('list'),nav=document.getElementById('nav');
+let audio=null,activeBtn=null;
+function stop(){if(audio){audio.pause();audio=null}speechSynthesis.cancel();activeBtn&&activeBtn.classList.remove('on');activeBtn=null}
+function speak(text,btn){ // 備援：找不到 mp3 時改用瀏覽器內建語音
+  const u=new SpeechSynthesisUtterance(text);u.lang='en-GB';u.rate=.85;
+  const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith('en-GB'))||speechSynthesis.getVoices().find(v=>v.lang.startsWith('en'));
+  if(v)u.voice=v;u.onend=()=>btn.classList.remove('on');speechSynthesis.speak(u)}
+function play(btn,src,text){
+  const same=activeBtn===btn;stop();if(same)return;
+  activeBtn=btn;btn.classList.add('on');
+  audio=new Audio(src);audio.onended=()=>stop();
+  audio.onerror=()=>{audio=null;speak(text,btn)};
+  audio.play().catch(()=>{audio=null;speak(text,btn)})}
+WORDS.forEach(e=>{
+  const k=e.l.toLowerCase(),id='w-'+k,img=`images/${k}_${e.s}.jpg`,qt=e.q.replace(/ \/ /g,', ');
+  nav.insertAdjacentHTML('beforeend',`<a href="#${id}">${e.l}</a>`);
+  const sec=document.createElement('article');sec.className='entry';sec.id=id;
+  sec.innerHTML=`<div class="pic"><b>${e.l}</b><img src="${img}" alt="${e.w} — 印象派油畫" loading="lazy"></div>
+  <div><div class="word"><h2>${e.w}</h2><i>${e.p}</i><span class="zh">${e.z}</span><button data-t="w">🔊 單字</button></div>
+  <blockquote><p>“${e.q.replace(/ \/ /g,'<br>')}”</p><button data-t="q">🔊 金句</button>
+  <small>${e.qz}<br>— ${e.pl}, ${e.lc}</small></blockquote></div>`;
+  sec.querySelector('[data-t=w]').onclick=ev=>play(ev.target,`audio/${k}_${e.s}_word.mp3`,e.w.replace("'",'e'));
+  sec.querySelector('[data-t=q]').onclick=ev=>play(ev.target,`audio/${k}_${e.s}_quote.mp3`,qt);
+  list.appendChild(sec)});
+</script>
+</body>
+</html>
